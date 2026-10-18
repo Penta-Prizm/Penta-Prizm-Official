@@ -1,7 +1,38 @@
-import React from 'react';
+import React, { Suspense, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Instagram, Send, MessageCircle, Mail, Zap } from 'lucide-react';
 import { MARQUEE_ITEMS } from '../data/studioData.js';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+
+function MeshyModel() {
+  const { scene } = useGLTF('/3D_Element/meshy-model.glb');
+  const modelRef = useRef();
+
+  useFrame((state, delta) => {
+    if (modelRef.current) {
+      modelRef.current.rotation.y += delta * 0.4;
+    }
+  });
+
+  return (
+    <primitive
+      ref={modelRef}
+      object={scene}
+      scale={1.5}
+      position={[0, 0, 0]}
+    />
+  );
+}
+
+function ModelLoadingFallback() {
+  return (
+    <mesh>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#ff3b19" wireframe />
+    </mesh>
+  );
+}
 
 export default function Hero({ onOpenContact, isLoaded = true }) {
   return (
@@ -77,13 +108,36 @@ export default function Hero({ onOpenContact, isLoaded = true }) {
           className="relative my-auto py-2 sm:py-4 md:py-5 lg:py-6 flex-1 min-h-0 flex items-center justify-center"
         >
           <div className="relative w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto h-full max-h-[34vh] sm:max-h-[36vh] md:max-h-[38vh] lg:max-h-[42vh] xl:max-h-[46vh] aspect-[16/10] sm:aspect-[16/9] md:aspect-[16/8.5] lg:aspect-[16/8] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
-            {/* Streetwear Model Photo */}
-            <img
-              src="/web1.png"
-              alt="Penta Prizm Creative Visual"
-              className="w-full h-full object-cover object-center brightness-95 contrast-110 group-hover:scale-105 transition-transform duration-700"
-              referrerPolicy="no-referrer"
-            />
+            {/* 3D GLB Model Viewer */}
+            <Canvas
+              camera={{ position: [0, 0, 4], fov: 45 }}
+              className="w-full h-full"
+              gl={{ antialias: true, alpha: true }}
+              style={{ background: 'transparent' }}
+            >
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[5, 5, 5]} intensity={1.2} />
+              <directionalLight position={[-5, -5, -5]} intensity={0.3} color="#ff3b19" />
+              <pointLight position={[0, 3, 2]} intensity={0.8} color="#ff3b19" />
+              <Suspense fallback={<ModelLoadingFallback />}>
+                <MeshyModel />
+                <Environment preset="city" />
+                <ContactShadows
+                  position={[0, -1.5, 0]}
+                  opacity={0.4}
+                  scale={5}
+                  blur={2}
+                  color="#ff3b19"
+                />
+              </Suspense>
+              <OrbitControls
+                enableZoom={false}
+                enablePan={false}
+                autoRotate={false}
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={(3 * Math.PI) / 4}
+              />
+            </Canvas>
 
             {/* Subtle dark vignette overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none" />
