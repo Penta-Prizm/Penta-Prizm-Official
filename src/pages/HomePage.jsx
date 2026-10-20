@@ -15,6 +15,9 @@ export default function HomePage({
   isLoaded,
   preselectedCustomItem,
   onFormSuccess,
+  onModelProgress,
+  onModelReady,
+  onModelError,
 }) {
   const schemas = [
     getOrganizationSchema(),
@@ -33,7 +36,13 @@ export default function HomePage({
 
       <main className="flex-1 flex flex-col w-full" id="main-content">
         {/* 1. Hero */}
-        <Hero onOpenContact={() => onOpenContact()} isLoaded={isLoaded} />
+        <Hero
+          onOpenContact={() => onOpenContact()}
+          isLoaded={isLoaded}
+          onModelProgress={onModelProgress}
+          onModelReady={onModelReady}
+          onModelError={onModelError}
+        />
 
         {/* 2. About Studio */}
         <AboutSection />

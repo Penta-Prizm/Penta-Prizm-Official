@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import LoadingScreen from './components/LoadingScreen.jsx';
 import Header from './components/Header.jsx';
@@ -36,12 +36,35 @@ function ScrollToTopOnNav() {
   return null;
 }
 
+// The 3D scene lives on the home page only.
+const MODEL_ROUTE = '/';
+
+// Safety net: if the 3D model never reports back, the loader falls back to
+// the fault state instead of freezing forever.
+const MODEL_LOAD_TIMEOUT = 20000;
+
 function AppInner() {
   const [isLoading, setIsLoading] = useState(true);
+  const [modelProgress, setModelProgress] = useState(0);
+  const [modelStatus, setModelStatus] = useState('pending'); // 'pending' | 'ready' | 'error'
+  const [documentReady, setDocumentReady] = useState(
+    () => typeof document !== 'undefined' && document.readyState === 'complete'
+  );
   const [applicationFormOpen, setApplicationFormOpen] = useState(false);
   const [preselectedApplication, setPreselectedApplication] = useState(null);
   const [preselectedCustomItem, setPreselectedCustomItem] = useState(null);
   const [successOverlay, setSuccessOverlay] = useState({ isOpen: false, name: '', contact: '' });
+
+  const location = useLocation();
+  const modelRequired = location.pathname === MODEL_ROUTE;
+
+  // All document level assets are in place.
+  useEffect(() => {
+    if (documentReady) return undefined;
+    const handleLoad = () => setDocumentReady(true);
+    window.addEventListener('load', handleLoad, { once: true });
+    return () => window.removeEventListener('load', handleLoad);
+  }, [documentReady]);
 
   // Scroll restoration
   useEffect(() => {
@@ -80,10 +103,62 @@ function AppInner() {
     }
   }, [isLoading]);
 
-  const handleLoadingComplete = () => {
+  const handleLoadingComplete = useCallback(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     setIsLoading(false);
-  };
+  }, []);
+
+  /* ------------------------------------------------------------------ *
+   * 3D model loading state (shared by the loader and the hero scene)
+   * ------------------------------------------------------------------ */
+  const handleModelProgress = useCallback((value) => {
+    setModelProgress((previous) => (value > previous ? value : previous));
+  }, []);
+
+  const handleModelReady = useCallback(() => {
+    setModelStatus((previous) => (previous === 'ready' ? previous : 'ready'));
+  }, []);
+
+  const handleModelError = useCallback(() => {
+    setModelStatus((previous) => (previous === 'ready' ? previous : 'error'));
+  }, []);
+
+  // Watchdog: a model that never reports back must not freeze the loader.
+  useEffect(() => {
+    if (!modelRequired || modelStatus !== 'pending') return undefined;
+    const timer = setTimeout(() => {
+      setModelStatus((previous) => (previous === 'pending' ? 'error' : previous));
+    }, MODEL_LOAD_TIMEOUT);
+    return () => clearTimeout(timer);
+  }, [modelRequired, modelStatus]);
+
+  // Routes without the 3D scene report their real document level progress.
+  const [documentProgress, setDocumentProgress] = useState(0);
+  useEffect(() => {
+    if (modelRequired) return undefined;
+    const compute = () => {
+      const images = Array.from(document.images || []);
+      const loaded = images.filter((image) => image.complete).length;
+      const imageRatio = images.length > 0 ? loaded / images.length : 1;
+      const readyRatio =
+        document.readyState === 'complete' ? 1 : document.readyState === 'interactive' ? 0.85 : 0.4;
+      setDocumentProgress(
+        Math.min(99, Math.round(Math.min(readyRatio, 0.3 + imageRatio * 0.7) * 100))
+      );
+    };
+    compute();
+    const interval = setInterval(compute, 250);
+    return () => clearInterval(interval);
+  }, [modelRequired]);
+
+  const loadingComplete = modelRequired ? modelStatus === 'ready' : documentReady;
+  const loaderStatus = modelStatus === 'error' ? 'error' : loadingComplete ? 'ready' : 'loading';
+  const loaderProgress =
+    modelStatus === 'ready'
+      ? 100
+      : modelRequired
+        ? Math.min(99, Math.round(modelProgress))
+        : Math.min(99, documentProgress);
 
   const handleOpenContact = (serviceName = '') => {
     const item =
@@ -129,7 +204,11 @@ function AppInner() {
 
       {/* Loading Screen (only on initial load) */}
       {isLoading && (
-        <LoadingScreen onLoadingComplete={handleLoadingComplete} />
+        <LoadingScreen
+          onLoadingComplete={handleLoadingComplete}
+          progress={loaderProgress}
+          status={loaderStatus}
+        />
       )}
 
       {/* Skip-to-content link for accessibility/crawlability */}
@@ -155,6 +234,9 @@ function AppInner() {
               isLoaded={!isLoading}
               preselectedCustomItem={preselectedCustomItem}
               onFormSuccess={handleFormSuccess}
+              onModelProgress={handleModelProgress}
+              onModelReady={handleModelReady}
+              onModelError={handleModelError}
             />
           }
         />

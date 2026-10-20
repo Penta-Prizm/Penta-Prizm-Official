@@ -1,13 +1,15 @@
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Instagram, Send, MessageCircle, Mail, Zap } from 'lucide-react';
 import { MARQUEE_ITEMS } from '../data/studioData.js';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
+import { useGLTF, OrbitControls, Environment, ContactShadows, useProgress } from '@react-three/drei';
 
-function MeshyModel() {
-  const { scene } = useGLTF('/3D_Element/meshy-model-optimized.glb');
-  const modelRef = useRef();
+const MODEL_URL = '/3D_Element/meshy-model-optimized.glb';
+const MODEL_FILE = 'meshy-model-optimized.glb';
+
+function MeshyModel({ modelRef }) {
+  const { scene } = useGLTF(MODEL_URL);
 
   useFrame((state, delta) => {
     if (modelRef.current) {
@@ -34,7 +36,99 @@ function ModelLoadingFallback() {
   );
 }
 
-export default function Hero({ onOpenContact, isLoaded = true }) {
+/**
+ * Reports the real download progress of the GLB (and only of the GLB) so the
+ * loading screen can mirror the actual asset state.
+ */
+function ModelProgressTracker({ onProgress, onError }) {
+  const { item, loaded, total, errors } = useProgress();
+  const progressCb = useRef(onProgress);
+  const errorCb = useRef(onError);
+  progressCb.current = onProgress;
+  errorCb.current = onError;
+
+  useEffect(() => {
+    if (!item || !String(item).includes(MODEL_FILE)) return;
+    if (!total) return;
+    const percentage = Math.min(100, Math.round((loaded / total) * 100));
+    if (progressCb.current) progressCb.current(percentage);
+  }, [item, loaded, total]);
+
+  useEffect(() => {
+    if (!errors || errors.length === 0) return;
+    const modelFailed = errors.some((entry) => String(entry).includes(MODEL_FILE));
+    if (modelFailed && errorCb.current) errorCb.current();
+  }, [errors]);
+
+  return null;
+}
+
+/**
+ * Fires once the model is attached to the scene graph AND one full frame has
+ * been rendered with it, so the loader never reveals an empty 3D container.
+ */
+function ModelFirstFrame({ modelRef, onFirstFrame }) {
+  const tickRef = useRef(0);
+  const attachedAtRef = useRef(null);
+  const doneRef = useRef(false);
+  const callbackRef = useRef(onFirstFrame);
+  callbackRef.current = onFirstFrame;
+
+  useFrame(() => {
+    if (doneRef.current) return;
+    tickRef.current += 1;
+
+    const model = modelRef.current;
+    if (!model) return;
+
+    if (attachedAtRef.current === null) {
+      if (!model.parent) return;
+      attachedAtRef.current = tickRef.current;
+      return;
+    }
+
+    if (tickRef.current > attachedAtRef.current) {
+      doneRef.current = true;
+      if (callbackRef.current) callbackRef.current();
+    }
+  });
+
+  return null;
+}
+
+/**
+ * Catches a failing GLB (network / decode) so a broken model never leaves the
+ * site stuck behind the loading screen.
+ */
+class SceneErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error) {
+    if (this.props.onError) this.props.onError(error);
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback || null;
+    return this.props.children;
+  }
+}
+
+export default function Hero({
+  onOpenContact,
+  isLoaded = true,
+  onModelProgress,
+  onModelReady,
+  onModelError
+}) {
+  const modelRef = useRef(null);
+
   return (
     <section
       id="hero-section"
@@ -119,17 +213,26 @@ export default function Hero({ onOpenContact, isLoaded = true }) {
               <directionalLight position={[5, 5, 5]} intensity={1.2} />
               <directionalLight position={[-5, -5, -5]} intensity={0.3} color="#ff3b19" />
               <pointLight position={[0, 3, 2]} intensity={0.8} color="#ff3b19" />
-              <Suspense fallback={<ModelLoadingFallback />}>
-                <MeshyModel />
-                <Environment preset="city" />
-                <ContactShadows
-                  position={[0, -1.5, 0]}
-                  opacity={0.4}
-                  scale={5}
-                  blur={2}
-                  color="#ff3b19"
-                />
-              </Suspense>
+              <ModelProgressTracker onProgress={onModelProgress} onError={onModelError} />
+              <SceneErrorBoundary onError={onModelError} fallback={<ModelLoadingFallback />}>
+                <Suspense fallback={<ModelLoadingFallback />}>
+                  <MeshyModel modelRef={modelRef} />
+                  <ContactShadows
+                    position={[0, -1.5, 0]}
+                    opacity={0.4}
+                    scale={5}
+                    blur={2}
+                    color="#ff3b19"
+                  />
+                </Suspense>
+              </SceneErrorBoundary>
+              {/* The HDR environment is decorative only: it must never block the model. */}
+              <SceneErrorBoundary fallback={null}>
+                <Suspense fallback={null}>
+                  <Environment preset="city" />
+                </Suspense>
+              </SceneErrorBoundary>
+              <ModelFirstFrame modelRef={modelRef} onFirstFrame={onModelReady} />
               <OrbitControls
                 enableZoom={false}
                 enablePan={false}

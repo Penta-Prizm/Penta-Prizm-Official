@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Terminal, Zap, ShieldCheck } from 'lucide-react';
 
@@ -10,41 +10,129 @@ const LOADING_STEPS = [
   'READY FOR LAUNCH'
 ];
 
-export default function LoadingScreen({ onLoadingComplete, minDuration = 2200 }) {
-  const [progress, setProgress] = useState(0);
+// How long the fault state stays on screen before the site is released.
+const ERROR_HOLD_MS = 4000;
+
+/**
+ * Full screen loader.
+ *
+ * The screen itself is fully driven by the real loading state of the app:
+ *  - `progress` is the actual asset progress reported by the 3D scene (0-100)
+ *  - `status` is 'loading' | 'ready' | 'error'
+ *
+ * The counter only ever reaches 100% when `status === 'ready'`, i.e. when the
+ * heavy assets are loaded, parsed and already rendered at least one frame.
+ */
+export default function LoadingScreen({
+  onLoadingComplete,
+  progress = 0,
+  status = 'loading',
+  errorMessage = '3D ASSET STREAM INTERRUPTED'
+}) {
+  const [displayProgress, setDisplayProgress] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [isSkipped, setIsSkipped] = useState(false);
+
+  const displayRef = useRef(0);
+  const targetRef = useRef(0);
+  const exitStartedRef = useRef(false);
+  const timersRef = useRef([]);
+
+  const isReady = status === 'ready';
+  const hasFailed = status === 'error';
+  // 100% is reserved for a fully ready scene, never reached while loading or after a failure.
+  const targetProgress = isReady || isSkipped ? 100 : Math.min(99, Math.max(0, progress));
 
   useEffect(() => {
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const calculated = Math.min(100, Math.floor((elapsed / minDuration) * 100));
-      
-      setProgress(calculated);
-      
-      // Update status step based on progress thresholds
-      const currentStep = Math.min(
-        LOADING_STEPS.length - 1,
-        Math.floor((calculated / 100) * LOADING_STEPS.length)
-      );
-      setStepIndex(currentStep);
+    targetRef.current = targetProgress;
+  }, [targetProgress]);
 
-      if (calculated >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-          setIsFinished(true);
-          setTimeout(() => {
-            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            if (onLoadingComplete) onLoadingComplete();
-          }, 600);
-        }, 300);
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach((id) => clearTimeout(id));
+    timersRef.current = [];
+  }, []);
+
+  // Ease the counter towards the real progress value (visual only, never decides completion).
+  useEffect(() => {
+    let rafId;
+    let last = performance.now();
+    const tick = (now) => {
+      const delta = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      const target = targetRef.current;
+      const current = displayRef.current;
+      const diff = target - current;
+      if (Math.abs(diff) < 0.4) {
+        if (current !== target) {
+          displayRef.current = target;
+          setDisplayProgress(target);
+        }
+      } else {
+        const next = current + diff * (1 - Math.exp(-delta * 6));
+        displayRef.current = next;
+        setDisplayProgress(next);
       }
-    }, 25);
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
-    return () => clearInterval(interval);
-  }, [minDuration, onLoadingComplete]);
+  // Keep the status line in sync with the real progress.
+  useEffect(() => {
+    const currentStep = Math.min(
+      LOADING_STEPS.length - 1,
+      Math.floor((displayProgress / 100) * LOADING_STEPS.length)
+    );
+    setStepIndex(currentStep);
+  }, [displayProgress]);
+
+  // Runs the existing exit animation and releases the site.
+  const dismiss = useCallback(
+    (withReadyDelay) => {
+      if (exitStartedRef.current) return;
+      exitStartedRef.current = true;
+      const start = setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        setIsFinished(true);
+        const complete = setTimeout(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+          if (onLoadingComplete) onLoadingComplete();
+        }, 600);
+        timersRef.current.push(complete);
+      }, withReadyDelay ? 300 : 0);
+      timersRef.current.push(start);
+    },
+    [onLoadingComplete]
+  );
+
+  // Ready: the scene is live, run the exit animation.
+  useEffect(() => {
+    if (!isReady && !isSkipped) return;
+    if (displayProgress < 100) return;
+    dismiss(true);
+  }, [isReady, isSkipped, displayProgress, dismiss]);
+
+  // Failure: show the fault state and never leave the user stuck on the loader.
+  useEffect(() => {
+    if (!hasFailed) return undefined;
+    const release = setTimeout(() => dismiss(false), ERROR_HOLD_MS);
+    timersRef.current.push(release);
+    return () => clearTimeout(release);
+  }, [hasFailed, dismiss]);
+
+  useEffect(() => clearTimers, [clearTimers]);
+
+  const handleSkip = () => {
+    if (hasFailed) {
+      dismiss(false);
+      return;
+    }
+    displayRef.current = 100;
+    setDisplayProgress(100);
+    setIsSkipped(true);
+  };
 
   return (
     <AnimatePresence>
@@ -115,23 +203,36 @@ export default function LoadingScreen({ onLoadingComplete, minDuration = 2200 })
             {/* Giant Monospace Numeric Counter */}
             <div className="font-bebas text-7xl sm:text-9xl md:text-[140px] leading-none tracking-tight font-black text-white flex items-baseline gap-2">
               <span className="tabular-nums">
-                {String(progress).padStart(2, '0')}
+                {String(Math.floor(displayProgress)).padStart(2, '0')}
               </span>
               <span className="text-[#ff3b19] text-3xl sm:text-5xl font-mono">%</span>
             </div>
 
             {/* Dynamic Status Text */}
             <div className="h-6 flex items-center justify-center mt-2">
-              <motion.p
-                key={stepIndex}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="text-xs sm:text-sm font-mono tracking-wider text-white/70 flex items-center gap-2 uppercase"
-              >
-                <Terminal className="w-3.5 h-3.5 text-[#646cff]" />
-                {LOADING_STEPS[stepIndex]}
-              </motion.p>
+              {hasFailed ? (
+                <motion.p
+                  key="error"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="text-xs sm:text-sm font-mono tracking-wider text-[#ff3b19] flex items-center gap-2 uppercase"
+                >
+                  <Terminal className="w-3.5 h-3.5" />
+                  {errorMessage}
+                </motion.p>
+              ) : (
+                <motion.p
+                  key={stepIndex}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="text-xs sm:text-sm font-mono tracking-wider text-white/70 flex items-center gap-2 uppercase"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-[#646cff]" />
+                  {LOADING_STEPS[stepIndex]}
+                </motion.p>
+              )}
             </div>
           </div>
 
@@ -141,7 +242,7 @@ export default function LoadingScreen({ onLoadingComplete, minDuration = 2200 })
             <div className="relative w-full bg-white/10 h-2.5 rounded-full overflow-hidden border border-white/10 p-[1px]">
               <motion.div
                 className="h-full bg-gradient-to-r from-[#ff3b19] via-[#ff6b00] to-[#646cff] rounded-full relative"
-                style={{ width: `${progress}%` }}
+                style={{ width: `${displayProgress}%` }}
                 transition={{ ease: 'linear' }}
               >
                 <div className="absolute right-0 top-0 bottom-0 w-3 bg-white blur-[2px] opacity-80" />
@@ -156,15 +257,10 @@ export default function LoadingScreen({ onLoadingComplete, minDuration = 2200 })
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-                  setProgress(100);
-                  setIsFinished(true);
-                  if (onLoadingComplete) onLoadingComplete();
-                }}
+                onClick={handleSkip}
                 className="text-white/60 hover:text-white underline underline-offset-2 transition-colors cursor-pointer"
               >
-                SKIP INTRO [ESC / CLICK]
+                {hasFailed ? 'CONTINUE [CLICK]' : 'SKIP INTRO [ESC / CLICK]'}
               </button>
             </div>
           </div>
