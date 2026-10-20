@@ -6,7 +6,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
 
 function MeshyModel() {
-  const { scene } = useGLTF('/3D_Element/meshy-model.glb');
+  const { scene } = useGLTF('/3D_Element/meshy-model-optimized.glb');
   const modelRef = useRef();
 
   useFrame((state, delta) => {
