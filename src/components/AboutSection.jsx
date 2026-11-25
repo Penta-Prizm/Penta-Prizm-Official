@@ -78,7 +78,7 @@ export default function AboutSection() {
                   <img
                     src="/web2-m.webp"
                     alt="Street ID Studio Creators and Models"
-                    className="w-full h-[320px] sm:h-[400px] object-cover object-center grayscale contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-[320px] sm:h-[400px] object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
                   />
                 </picture>
