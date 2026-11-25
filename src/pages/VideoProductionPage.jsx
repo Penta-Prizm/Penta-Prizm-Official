@@ -90,7 +90,7 @@ export default function VideoProductionPage({ onOpenContact }) {
       faqs={faqs}
       relatedServiceIds={['creative-content', 'branding', 'digital-marketing']}
       onOpenContact={onOpenContact}
-      heroImage="/web3.png"
+      heroImage="/web3.webp"
     />
   );
 }

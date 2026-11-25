@@ -158,7 +158,7 @@ export default function LoadingScreen({
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center">
                 <img
-                  src="/Logo1.png"
+                  src="/logo1.webp"
                   alt="Penta Prizm Logo"
                   className="w-full h-full object-contain"
                   onError={(e) => {

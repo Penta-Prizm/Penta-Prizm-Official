@@ -123,7 +123,7 @@ export default function WhatWeDo({ onSelectService }) {
             {/* Photo Card with Neon Red Spray Loop Overlay */}
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/20 min-h-[200px] sm:min-h-[220px] bg-neutral-900 group">
               <img
-                src="/web4.png"
+                src="/web4.webp"
                 alt="Digital Design Presentation"
                 className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-105 transition-transform duration-500"
                 referrerPolicy="no-referrer"
@@ -148,7 +148,7 @@ export default function WhatWeDo({ onSelectService }) {
             {/* Photo Card with 'PP' Spray Tag */}
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/20 min-h-[200px] sm:min-h-[220px] bg-neutral-900 group">
               <img
-                src="/web3.png"
+                src="/web3.webp"
                 alt="Creative Media Visual"
                 className="w-full h-full object-cover grayscale contrast-125 group-hover:scale-105 transition-transform duration-500"
                 referrerPolicy="no-referrer"
@@ -218,7 +218,7 @@ export default function WhatWeDo({ onSelectService }) {
             {/* Photo Card */}
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border border-white/20 min-h-[200px] sm:min-h-[220px] bg-neutral-900 group">
               <img
-                src="/web5.png"
+                src="/web5.webp"
                 alt="Brand Growth Campaign"
                 className="w-full h-full object-cover contrast-110 group-hover:scale-105 transition-transform duration-500"
                 referrerPolicy="no-referrer"

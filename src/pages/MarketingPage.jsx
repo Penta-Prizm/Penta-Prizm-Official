@@ -90,7 +90,7 @@ export default function MarketingPage({ onOpenContact }) {
       faqs={faqs}
       relatedServiceIds={['digital-marketing', 'branding', 'creative-content']}
       onOpenContact={onOpenContact}
-      heroImage="/web4.png"
+      heroImage="/web4.webp"
     />
   );
 }

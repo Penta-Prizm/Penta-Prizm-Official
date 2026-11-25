@@ -10,7 +10,7 @@ export const PORTFOLIO_PROJECTS = [
     year: '2026',
     client: 'Urban Fabric Co.',
     heroImage: '/web1.png',
-    galleryImages: ['/web1.png', '/web2.png', '/web3.png'],
+    galleryImages: ['/web1.webp', '/web2.webp', '/web3.webp'],
     shortDesc:
       'A complete visual overhaul and comprehensive design system engineered to position a modern lifestyle brand with high-impact streetwear aesthetics and distinct brand recognition.',
     challenge:
@@ -44,8 +44,8 @@ export const PORTFOLIO_PROJECTS = [
     industry: 'Technology & Digital Services',
     year: '2026',
     client: 'Nexus Digital Systems',
-    heroImage: '/web2.png',
-    galleryImages: ['/web2.png', '/web3.png', '/web4.png'],
+    heroImage: '/web2.webp',
+    galleryImages: ['/web2.webp', '/web3.webp', '/web4.webp'],
     shortDesc:
       'A blazing-fast, responsive web application engineered with modern interactive UI/UX, optimized Core Web Vitals, and seamless conversion funnels.',
     challenge:
@@ -78,8 +78,8 @@ export const PORTFOLIO_PROJECTS = [
     industry: 'Automotive & Lifestyle',
     year: '2026',
     client: 'Aero Dynamics',
-    heroImage: '/web3.png',
-    galleryImages: ['/web3.png', '/web5.png', '/web1.png'],
+    heroImage: '/web3.webp',
+    galleryImages: ['/web3.webp', '/web5.webp', '/web1.webp'],
     shortDesc:
       'End-to-end commercial video production featuring 4K cinematic cinematography, motion graphics, custom sound design, and precision color grading.',
     challenge:
@@ -111,8 +111,8 @@ export const PORTFOLIO_PROJECTS = [
     industry: 'Hospitality & B2B Services',
     year: '2026',
     client: 'Horizon Hospitality Group',
-    heroImage: '/web4.png',
-    galleryImages: ['/web4.png', '/web2.png', '/web5.png'],
+    heroImage: '/web4.webp',
+    galleryImages: ['/web4.webp', '/web2.webp', '/web5.webp'],
     shortDesc:
       'Omnichannel digital marketing strategy integrating Meta Ads, Google Search campaigns, technical SEO, and conversion-optimized landing pages.',
     challenge:
@@ -144,8 +144,8 @@ export const PORTFOLIO_PROJECTS = [
     industry: 'On-Demand Services & Logistics',
     year: '2026',
     client: 'SwiftRoute Technologies',
-    heroImage: '/web5.png',
-    galleryImages: ['/web5.png', '/web3.png', '/web2.png'],
+    heroImage: '/web5.webp',
+    galleryImages: ['/web5.webp', '/web3.webp', '/web2.webp'],
     shortDesc:
       'Intuitive iOS and Android mobile application paired with a real-time admin dispatch dashboard, live GPS tracking, and secure payment integrations.',
     challenge:

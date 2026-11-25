@@ -95,7 +95,7 @@ export default function WebDevelopmentPage({ onOpenContact }) {
       faqs={faqs}
       relatedServiceIds={['app-development', 'branding', 'digital-marketing']}
       onOpenContact={onOpenContact}
-      heroImage="/web2.png"
+      heroImage="/web2.webp"
     />
   );
 }

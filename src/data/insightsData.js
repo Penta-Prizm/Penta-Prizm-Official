@@ -10,7 +10,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-01-15',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Creative Team',
-    image: '/web1.png',
+    image: '/web1.webp',
     excerpt:
       'Brand identity is far more than just a logo. Discover how cohesive visual strategy, typography, color psychology, and brand voice create lasting business value.',
     content: `
@@ -56,7 +56,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-01-22',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Engineering',
-    image: '/web2.png',
+    image: '/web2.webp',
     excerpt:
       'In a mobile-first digital economy, your website is your 24/7 storefront. Learn why speed, responsive UI/UX, and technical SEO are critical for conversion.',
     content: `
@@ -98,7 +98,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-02-05',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Marketing Team',
-    image: '/web4.png',
+    image: '/web4.webp',
     excerpt:
       'Understand the key differences between full multi-page websites and dedicated campaign landing pages to maximize conversion rates and advertising ROI.',
     content: `
@@ -143,7 +143,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-02-12',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Digital Growth',
-    image: '/web2-m.png',
+    image: '/web2-m.webp',
     excerpt:
       'Compare organic Search Engine Optimization with Pay-Per-Click Google Advertising. Discover how combining both builds both immediate revenue and compounding visibility.',
     content: `
@@ -176,7 +176,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-02-18',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Production Crew',
-    image: '/web3.png',
+    image: '/web3.webp',
     excerpt:
       'Video content generates 1200% more shares than text and static images combined. Learn how commercial video production and short-form reels transform consumer trust.',
     content: `
@@ -211,7 +211,7 @@ export const INSIGHTS_POSTS = [
     publishedDate: '2026-02-25',
     modifiedDate: '2026-02-28',
     author: 'Penta Prizm Engineering',
-    image: '/web5.png',
+    image: '/web5.webp',
     excerpt:
       'Deciding between native iOS/Android applications and responsive web applications? Evaluate performance, offline capabilities, push notifications, and development costs.',
     content: `

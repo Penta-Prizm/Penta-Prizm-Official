@@ -90,7 +90,7 @@ export default function AppDevelopmentPage({ onOpenContact }) {
       faqs={faqs}
       relatedServiceIds={['website-development', 'branding', 'marketing']}
       onOpenContact={onOpenContact}
-      heroImage="/web5.png"
+      heroImage="/web5.webp"
     />
   );
 }

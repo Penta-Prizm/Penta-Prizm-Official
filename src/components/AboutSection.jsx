@@ -74,9 +74,9 @@ export default function AboutSection() {
                 className="relative rounded-lg overflow-hidden border-2 border-black shadow-xl bg-neutral-900 group"
               >
                 <picture className="block w-full">
-                  <source media="(min-width: 640px)" srcSet="/web2.png" />
+                  <source media="(min-width: 640px)" srcSet="/web2.webp" />
                   <img
-                    src="/web2-m.png"
+                    src="/web2-m.webp"
                     alt="Street ID Studio Creators and Models"
                     className="w-full h-[320px] sm:h-[400px] object-cover object-center grayscale contrast-125 brightness-90 group-hover:scale-105 transition-transform duration-500"
                     referrerPolicy="no-referrer"
@@ -129,7 +129,7 @@ export default function AboutSection() {
 
                 <div className="relative aspect-square overflow-hidden bg-neutral-800 rounded">
                   <img
-                    src="/web3.png"
+                    src="/web3.webp"
                     alt="Street ID Camera Shot"
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"

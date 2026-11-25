@@ -14,7 +14,7 @@ export function getOrganizationSchema() {
     url: SEO_CONFIG.siteUrl,
     logo: {
       '@type': 'ImageObject',
-      url: `${SEO_CONFIG.siteUrl}/Logo1.png`,
+      url: `${SEO_CONFIG.siteUrl}/logo1.webp`,
       caption: 'Penta Prizm Logo',
     },
     image: `${SEO_CONFIG.siteUrl}/Hero.png`,
