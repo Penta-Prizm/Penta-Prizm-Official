@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Instagram, Send, MessageCircle, Mail, Zap } from 'lucide-react';
 import { MARQUEE_ITEMS } from '../data/studioData.js';
@@ -128,6 +128,21 @@ export default function Hero({
   onModelError
 }) {
   const modelRef = useRef(null);
+  const heroVisualRef = useRef(null);
+  const [sceneActive, setSceneActive] = useState(true);
+
+  // Stop the WebGL render loop while the hero is off-screen so it cannot
+  // steal GPU/main-thread time from scrolling through the sections below it.
+  useEffect(() => {
+    const el = heroVisualRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSceneActive(entry.isIntersecting),
+      { rootMargin: '100px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
@@ -201,13 +216,14 @@ export default function Hero({
           transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
           className="relative my-auto py-2 sm:py-4 md:py-5 lg:py-6 flex-1 min-h-0 flex items-center justify-center"
         >
-          <div className="relative w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto h-full max-h-[34vh] sm:max-h-[36vh] md:max-h-[38vh] lg:max-h-[42vh] xl:max-h-[46vh] aspect-[16/10] sm:aspect-[16/9] md:aspect-[16/8.5] lg:aspect-[16/8] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
+          <div ref={heroVisualRef} className="relative w-full max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto h-full max-h-[34vh] sm:max-h-[36vh] md:max-h-[38vh] lg:max-h-[42vh] xl:max-h-[46vh] aspect-[16/10] sm:aspect-[16/9] md:aspect-[16/8.5] lg:aspect-[16/8] rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
             {/* 3D GLB Model Viewer */}
             <Canvas
               camera={{ position: [0, 0, 4], fov: 45 }}
               className="w-full h-full"
               gl={{ antialias: true, alpha: true }}
               style={{ background: 'transparent' }}
+              frameloop={sceneActive ? 'always' : 'never'}
             >
               <ambientLight intensity={0.6} />
               <directionalLight position={[5, 5, 5]} intensity={1.2} />
