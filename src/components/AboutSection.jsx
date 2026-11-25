@@ -220,13 +220,7 @@ export default function AboutSection() {
         </div>
 
         {/* Principles / Values Row */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-16 pt-8 border-t-2 border-[#111111]"
-        >
+        <div className="mt-16 pt-8 border-t-2 border-[#111111]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
             <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#111111]">
               WHAT WE BELIEVE IN
@@ -245,21 +239,20 @@ export default function AboutSection() {
                 key={belief.num}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                whileHover={{ y: -2 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.15 * idx }}
-                className="p-6 sm:p-8 text-center bg-black group hover:bg-[#ff3b19] transition-all duration-300 cursor-pointer"
+                className="p-6 sm:p-8 text-center bg-black transform-gpu"
               >
-                <span className="font-mono text-xs font-bold tracking-widest text-white block mb-2 group-hover:text-white">
-                  {belief.num}
-                </span>
-                <span className="font-bebas text-3xl sm:text-4xl text-white uppercase tracking-wide block leading-tight group-hover:text-white">
-                  {belief.title}
-                </span>
+              <span className="font-mono text-xs font-bold tracking-widest text-white block mb-2">
+                {belief.num}
+              </span>
+              <span className="font-bebas text-3xl sm:text-4xl text-white uppercase tracking-wide block leading-tight">
+                {belief.title}
+              </span>
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
